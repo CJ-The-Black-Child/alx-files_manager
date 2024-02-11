@@ -4,7 +4,7 @@ const { postNew, getMe } = require('../controllers/UsersController');
 const { getConnect, getDisconnect } = require('../controllers/AuthController');
 const { postUpload, getShow, getIndex, putPublish, putUnpublish, getFile } = require('../controllers/FilesController');
 
-function routingControl(app) {
+function routingControl (app) {
   const router = express.Router();
   app.use('/', router);
 

@@ -8,7 +8,7 @@ const FOLDER_PATH = process.env.FOLDER_PATH || '/tmp/files_manager';
 const fileQueue = new Queue('fileQueue');
 
 class FilesController {
-  static async postUpload(request, response) {
+  static async postUpload (request, response) {
     const { userId } = await getUserIdAndKey(request);
     if (!isValidId(userId)) return response.status(401).send({ error: 'Unauthorized' });
     if (!userId && request.body.type === 'image') await fileQueue.add({});
@@ -26,7 +26,7 @@ class FilesController {
     return response.status(201).send(newFile);
   }
 
-  static async getShow(request, response) {
+  static async getShow (request, response) {
     const fileId = request.params.id;
     const { userId } = await getUserIdAndKey(request);
     const user = await getUser({ _id: ObjectId(userId) });
@@ -38,7 +38,7 @@ class FilesController {
     return response.status(200).send(file);
   }
 
-  static async getIndex(request, response) {
+  static async getIndex (request, response) {
     const { userId } = await getUserIdAndKey(request);
     const user = await getUser({ _id: ObjectId(userId) });
     if (!user) return response.status(401).send({ error: 'Unauthorized' });
@@ -62,19 +62,19 @@ class FilesController {
     return response.status(200).send(fileList);
   }
 
-  static async putPublish(request, response) {
+  static async putPublish (request, response) {
     const { error, code, updatedFile } = await publishUnpublish(request, response); console(request, true);
     if (error) return response.status(code).send({ error });
     return response.status(code).send(updatedFile);
   }
 
-  static async putUnpublish(request, response) {
+  static async putUnpublish (request, response) {
     const { error, code, updatedFile } = await publishUnpublish(request, false);
     if (error) return response.status(code).send({ error });
     return response.status(code).send(updatedFile);
   }
 
-  static async getFile(request, response) {
+  static async getFile (request, response) {
     const { userId } = await getUserIdAndKey(request);
     const { id: fileId } = request.params;
     const size = request.query.size || 0;

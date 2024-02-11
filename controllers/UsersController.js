@@ -7,7 +7,7 @@ const { getUser, getUserIdAndKey } = require('../utils/user');
 const userQueue = new Queue('sending email');
 
 class UsersController {
-  static async postNew(req, res) {
+  static async postNew (req, res) {
     const { email, password } = req.body;
 
     if (!email) return res.status(400).json({ error: 'Missing email' });
@@ -25,7 +25,7 @@ class UsersController {
     return res.status(201).json({ email, id: userId });
   }
 
-  static async getMe(request, response) {
+  static async getMe (request, response) {
     const { userId } = await getUserIdAndKey(request);
 
     const user = await getUser({ _id: ObjectId(userId) });
