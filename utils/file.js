@@ -6,7 +6,7 @@ const userUtils = require('./user');
 const basicUtils = require('./basic');
 
 const fileUtils = {
-  async validateBody (request) {
+  async validateBody(request) {
     const {
       name, type, isPublic = false, data
     } = request.body;
@@ -56,19 +56,19 @@ const fileUtils = {
     return obj;
   },
 
-  async getFile (query) {
+  async getFile(query) {
     const filesCollection = await dbClient.filesCollection();
     const file = await filesCollection.findOne(query);
     return file;
   },
 
-  async getFilesOfParentId (query) {
+  async getFilesOfParentId(query) {
     const filesCollection = await dbClient.filesCollection();
     const fileList = await filesCollection.aggregate(query);
     return fileList;
   },
 
-  async saveFile (userId, fileParams, FOLDER_PATH) {
+  async saveFile(userId, fileParams, FOLDER_PATH) {
     const {
       name, type, isPublic, data
     } = fileParams;
@@ -111,7 +111,7 @@ const fileUtils = {
     return { error: null, newFile };
   },
 
-  async updateFile (query, set) {
+  async updateFile(query, set) {
     const filesCollection = await dbClient.filesCollection();
     const fileList = await filesCollection.findOneAndUpdate(
       query,
@@ -121,7 +121,7 @@ const fileUtils = {
     return fileList;
   },
 
-  async publishUnpublish (request, setPublish) {
+  async publishUnpublish(request, setPublish) {
     const { id: fileId } = request.params;
 
     if (!basicUtils.isValidId(fileId)) { return { error: 'Unauthorized', code: 401 }; }
@@ -172,14 +172,14 @@ const fileUtils = {
     return { error: null, code: 200, updatedFile };
   },
 
-  processFile (doc) {
+  processFile(doc) {
     const file = { id: doc._id.toString(), ...doc };
     delete file.localPath;
     delete file._id;
     return file;
   },
 
-  isOwnerAndPublic (file, userId) {
+  isOwnerAndPublic(file, userId) {
     if (
       (!file.isPublic && !userId) ||
             (userId && file.userId.toString() !== userId && !file.isPublic)
@@ -187,7 +187,7 @@ const fileUtils = {
     return true;
   },
 
-  async getFileData (file, size) {
+  async getFileData(file, size) {
     let { localPath } = file;
     let data;
     if (size) localPath = `${localPath}_${size}`;

@@ -1,7 +1,7 @@
 const { ObjectId } = require('mongodb');
 
 const basicUtils = {
-  isValidId (id) {
+  isValidId(id) {
     if (!ObjectId.isValid(id)) {
       return false;
     }

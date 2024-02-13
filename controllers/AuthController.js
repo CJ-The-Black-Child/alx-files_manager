@@ -4,7 +4,7 @@ const { set } = require('../utils/redis');
 const { getUser, getUserIdAndKey } = require('../utils/user');
 
 class AuthController {
-  static async getConnect (request, response) {
+  static async getConnect(request, response) {
     const Authorization = request.header('Authorization') || '';
     const credentials = Authorization.split(' ')[1];
 
@@ -24,7 +24,7 @@ class AuthController {
     return response.status(200).send({ token });
   }
 
-  static async getDisconnect (request, response) {
+  static async getDisconnect(request, response) {
     const { userId, key } = await getUserIdAndKey(request);
 
     if (!userId) return response.status(401).send({ error: 'Unauthorized' });
