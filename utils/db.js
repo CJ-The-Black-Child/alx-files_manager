@@ -1,7 +1,7 @@
 const mongodb = require('mongodb');
 
 class DBClient {
-  constructor () {
+  constructor() {
     const host = process.env.DB_HOST || 'localhost';
     const port = process.env.DB_PORT || 27017;
     const database = process.env.DB_DATABASE || 'files_manager';
@@ -11,25 +11,25 @@ class DBClient {
     this.client.connect();
   }
 
-  isAlive () {
+  isAlive() {
     return this.client.isConnected();
   }
 
-  async nbUsers () {
+  async nbUsers() {
     const usersCollection = await this.usersCollection();
     return usersCollection.countDocuments();
   }
 
-  async nbFiles () {
+  async nbFiles() {
     const filesCollection = await this.filesCollection();
     return filesCollection.countDocuments();
   }
 
-  async usersCollection () {
+  async usersCollection() {
     return this.client.db().collection('users');
   }
 
-  async filesCollection () {
+  async filesCollection() {
     return this.client.db().collection('files');
   }
 }
