@@ -8,7 +8,11 @@ class DBClient {
     const dbURL = `mongodb://${host}:${port}/${database}`;
 
     this.client = new mongodb.MongoClient(dbURL, { useUnifiedTopology: true });
-    this.client.connect();
+    this.client.connect((err) => {
+      if (err) {
+        console.error('Failed to connect to MongoDB:', err);
+      }
+    });
   }
 
   isAlive() {
