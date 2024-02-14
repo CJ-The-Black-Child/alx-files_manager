@@ -2,9 +2,9 @@ const Queue = require('bull');
 const { ObjectId } = require('mongodb');
 const fsPromises = require('fs').promises;
 const imageThumbnail = require('image-thumbnail');
-const { getFile } = require('./utils/file');
-const { getUser } = require('./utils/user');
-const { isValidId } = require('./utils/basic');
+const fileUtils = require('./utils/file');
+const userUtils = require('./utils/user');
+const basicUtils = require('./utils/basic');
 
 const fileQueue = new Queue('fileQueue');
 const userQueue = new Queue('userQueue');
@@ -12,13 +12,21 @@ const userQueue = new Queue('userQueue');
 fileQueue.process(async (job) => {
   const { fileId, userId } = job.data;
 
-  if (!userId || !fileId || !isValidId(fileId) || !isValidId(userId)) {
-    throw new Error('Missing or invalid fileId or userId');
+  if (!userId) {
+    console.log('Missing userId');
+    throw new Error('Missing userId');
   }
 
-  const file = await getFile({
+  if (!fileId) {
+    console.log('Missing fileId');
+    throw new Error('Missing fileId');
+  }
+
+  if (!basicUtils.isValidId(fileId) || !basicUtils.isValidId(userId)) throw new Error('File not found');
+
+  const file = await fileUtils.getFile({
     _id: ObjectId(fileId),
-    userId: ObjectId(userId)
+    userId: ObjectId(userId),
   });
 
   if (!file) throw new Error('File not found');
@@ -27,7 +35,7 @@ fileQueue.process(async (job) => {
   const options = {};
   const widths = [500, 250, 100];
 
-  for (const width of widths) {
+  widths.forEach(async (width) => {
     options.width = width;
     try {
       const thumbnail = await imageThumbnail(localPath, options);
@@ -35,18 +43,21 @@ fileQueue.process(async (job) => {
     } catch (err) {
       console.error(err.message);
     }
-  }
+  });
 });
 
 userQueue.process(async (job) => {
   const { userId } = job.data;
 
-  if (!userId || !isValidId(userId)) {
-    throw new Error('Missing or invalid userId');
+  if (!userId) {
+    console.log('Missing userId');
+    throw new Error('Missing userId');
   }
 
-  const user = await getUser({
-    _id: ObjectId(userId)
+  if (!basicUtils.isValidId(userId)) throw new Error('User not found');
+
+  const user = await userUtils.getUser({
+    _id: ObjectId(userId),
   });
 
   if (!user) throw new Error('User not found');

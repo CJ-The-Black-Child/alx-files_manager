@@ -16,13 +16,11 @@ class DBClient {
   }
 
   async nbUsers() {
-    const usersCollection = await this.usersCollection();
-    return usersCollection.countDocuments();
+    return this.client.db().collection('users').countDocuments();
   }
 
   async nbFiles() {
-    const filesCollection = await this.filesCollection();
-    return filesCollection.countDocuments();
+    return this.client.db().collection('files').countDocuments();
   }
 
   async usersCollection() {
@@ -34,4 +32,5 @@ class DBClient {
   }
 }
 
-module.exports = new DBClient();
+const dbClient = new DBClient();
+module.exports = dbClient;

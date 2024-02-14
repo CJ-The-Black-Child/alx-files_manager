@@ -17,10 +17,9 @@ const userUtils = {
   },
 
   async getUser(query) {
-    const usersCollection = await dbClient.usersCollection();
-    const user = await usersCollection.findOne(query);
+    const user = await dbClient.usersCollection.findOne(query);
     return user;
-  }
+  },
 };
 
 module.exports = userUtils;

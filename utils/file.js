@@ -8,7 +8,7 @@ const basicUtils = require('./basic');
 const fileUtils = {
   async validateBody(request) {
     const {
-      name, type, isPublic = false, data
+      name, type, isPublic = false, data,
     } = request.body;
 
     let { parentId = 0 } = request.body;
@@ -29,7 +29,7 @@ const fileUtils = {
 
       if (basicUtils.isValidId(parentId)) {
         file = await this.getFile({
-          _id: ObjectId(parentId)
+          _id: ObjectId(parentId),
         });
       } else {
         file = null;
@@ -49,28 +49,26 @@ const fileUtils = {
         type,
         parentId,
         isPublic,
-        data
-      }
+        data,
+      },
     };
 
     return obj;
   },
 
   async getFile(query) {
-    const filesCollection = await dbClient.filesCollection();
-    const file = await filesCollection.findOne(query);
+    const file = await dbClient.filesCollection.findOne(query);
     return file;
   },
 
   async getFilesOfParentId(query) {
-    const filesCollection = await dbClient.filesCollection();
-    const fileList = await filesCollection.aggregate(query);
+    const fileList = await dbClient.filesCollection.aggregate(query);
     return fileList;
   },
 
   async saveFile(userId, fileParams, FOLDER_PATH) {
     const {
-      name, type, isPublic, data
+      name, type, isPublic, data,
     } = fileParams;
     let { parentId } = fileParams;
 
@@ -81,7 +79,7 @@ const fileUtils = {
       name,
       type,
       isPublic,
-      parentId
+      parentId,
     };
 
     if (fileParams.type !== 'folder') {
@@ -101,8 +99,7 @@ const fileUtils = {
       }
     }
 
-    const filesCollection = await dbClient.filesCollection();
-    const result = await filesCollection.insertOne(query);
+    const result = await dbClient.filesCollection.insertOne(query);
 
     const file = this.processFile(query);
 
@@ -112,11 +109,10 @@ const fileUtils = {
   },
 
   async updateFile(query, set) {
-    const filesCollection = await dbClient.filesCollection();
-    const fileList = await filesCollection.findOneAndUpdate(
+    const fileList = await dbClient.filesCollection.findOneAndUpdate(
       query,
       set,
-      { returnOriginal: false }
+      { returnOriginal: false },
     );
     return fileList;
   },
@@ -131,14 +127,14 @@ const fileUtils = {
     if (!basicUtils.isValidId(userId)) { return { error: 'Unauthorized', code: 401 }; }
 
     const user = await userUtils.getUser({
-      _id: ObjectId(userId)
+      _id: ObjectId(userId),
     });
 
     if (!user) return { error: 'Unauthorized', code: 401 };
 
     const file = await this.getFile({
       _id: ObjectId(fileId),
-      userId: ObjectId(userId)
+      userId: ObjectId(userId),
     });
 
     if (!file) return { error: 'Not found', code: 404 };
@@ -146,9 +142,9 @@ const fileUtils = {
     const result = await this.updateFile(
       {
         _id: ObjectId(fileId),
-        userId: ObjectId(userId)
+        userId: ObjectId(userId),
       },
-      { $set: { isPublic: setPublish } }
+      { $set: { isPublic: setPublish } },
     );
 
     const {
@@ -157,7 +153,7 @@ const fileUtils = {
       name,
       type,
       isPublic,
-      parentId
+      parentId,
     } = result.value;
 
     const updatedFile = {
@@ -166,38 +162,44 @@ const fileUtils = {
       name,
       type,
       isPublic,
-      parentId
+      parentId,
     };
 
     return { error: null, code: 200, updatedFile };
   },
 
   processFile(doc) {
-    const file = { id: doc._id.toString(), ...doc };
+    const file = { id: doc._id, ...doc };
+
     delete file.localPath;
     delete file._id;
+
     return file;
   },
 
   isOwnerAndPublic(file, userId) {
     if (
-      (!file.isPublic && !userId) ||
-            (userId && file.userId.toString() !== userId && !file.isPublic)
+      (!file.isPublic && !userId)
+      || (userId && file.userId.toString() !== userId && !file.isPublic)
     ) { return false; }
+
     return true;
   },
 
   async getFileData(file, size) {
     let { localPath } = file;
     let data;
+
     if (size) localPath = `${localPath}_${size}`;
+
     try {
       data = await fsPromises.readFile(localPath);
     } catch (err) {
       return { error: 'Not found', code: 404 };
     }
+
     return { data };
-  }
+  },
 };
 
 module.exports = fileUtils;
