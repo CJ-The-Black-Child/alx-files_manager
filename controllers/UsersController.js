@@ -18,14 +18,15 @@ class UsersController {
       return res.status(400).json({ error: 'Missing password' });
     }
 
-    const emailExists = await (await dbClient.usersCollection()).findOne({ email });
+    const usersCollection = await dbClient.usersCollection();
+    const emailExists = await usersCollection.findOne({ email });
 
     if (emailExists) {
       return res.status(400).json({ error: 'Already exist' });
     }
 
     const hashedPass = sha1(password);
-    const insertionInfo = await (await dbClient.usersCollection()).insertOne({ email, password: hashedPass });
+    const insertionInfo = await usersCollection.insertOne({ email, password: hashedPass });
     const userId = insertionInfo.insertedId.toString();
 
     userQueue.add({ userId });
@@ -35,7 +36,8 @@ class UsersController {
   static async getMe(request, response) {
     const { userId } = await User.getUserIdAndKey(request);
 
-    const user = await User.getUser({
+    const usersCollection = await dbClient.usersCollection();
+    const user = await usersCollection.findOne({
       _id: ObjectId(userId)
     });
 
