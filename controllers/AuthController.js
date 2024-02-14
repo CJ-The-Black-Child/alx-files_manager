@@ -4,7 +4,7 @@ const redisClient = require('../utils/redis');
 const User = require('../utils/user');
 
 class AuthController {
-  static async getConnect(request, response) {
+  static async getConnect (request, response) {
     const Authorization = request.header('Authorization') || '';
 
     const credentials = Authorization.split(' ')[1];
@@ -20,7 +20,7 @@ class AuthController {
 
     const user = await User.getUser({
       email,
-      password: sha1Password,
+      password: sha1Password
     });
 
     if (!user) return response.status(401).send({ error: 'Unauthorized' });
@@ -34,7 +34,7 @@ class AuthController {
     return response.status(200).send({ token });
   }
 
-  static async getDisconnect(request, response) {
+  static async getDisconnect (request, response) {
     const { userId, key } = await User.getUserIdAndKey(request);
 
     if (!userId) return response.status(401).send({ error: 'Unauthorized' });
