@@ -1,6 +1,6 @@
-const { ObjectId } = require('mongodb');
-const { v4: uuidv4 } = require('uuid');
-const fsPromises = require('fs').promises;
+const mongodb = require('mongodb');
+const uuid = require('uuid');
+const fs = require('fs');
 const dbClient = require('./db');
 const userUtils = require('./user');
 const basicUtils = require('./basic');
@@ -29,7 +29,7 @@ const fileUtils = {
 
       if (basicUtils.isValidId(parentId)) {
         file = await this.getFile({
-          _id: ObjectId(parentId)
+          _id: new mongodb.ObjectId(parentId)
         });
       } else {
         file = null;
@@ -72,10 +72,10 @@ const fileUtils = {
     } = fileParams;
     let { parentId } = fileParams;
 
-    if (parentId !== 0) parentId = ObjectId(parentId);
+    if (parentId !== 0) parentId = new mongodb.ObjectId(parentId);
 
     const query = {
-      userId: ObjectId(userId),
+      userId: new mongodb.ObjectId(userId),
       name,
       type,
       isPublic,
@@ -83,7 +83,7 @@ const fileUtils = {
     };
 
     if (fileParams.type !== 'folder') {
-      const fileNameUUID = uuidv4();
+      const fileNameUUID = uuid.v4();
 
       const fileDataDecoded = Buffer.from(data, 'base64');
 
@@ -92,8 +92,8 @@ const fileUtils = {
       query.localPath = path;
 
       try {
-        await fsPromises.mkdir(FOLDER_PATH, { recursive: true });
-        await fsPromises.writeFile(path, fileDataDecoded);
+        await fs.promises.mkdir(FOLDER_PATH, { recursive: true });
+        await fs.promises.writeFile(path, fileDataDecoded);
       } catch (err) {
         return { error: err.message, code: 400 };
       }
@@ -127,22 +127,22 @@ const fileUtils = {
     if (!basicUtils.isValidId(userId)) { return { error: 'Unauthorized', code: 401 }; }
 
     const user = await userUtils.getUser({
-      _id: ObjectId(userId)
+      _id: new mongodb.ObjectId(userId)
     });
 
     if (!user) return { error: 'Unauthorized', code: 401 };
 
     const file = await this.getFile({
-      _id: ObjectId(fileId),
-      userId: ObjectId(userId)
+      _id: new mongodb.ObjectId(fileId),
+      userId: new mongodb.ObjectId(userId)
     });
 
     if (!file) return { error: 'Not found', code: 404 };
 
     const result = await this.updateFile(
       {
-        _id: ObjectId(fileId),
-        userId: ObjectId(userId)
+        _id: new mongodb.ObjectId(fileId),
+        userId: new mongodb.ObjectId(userId)
       },
       { $set: { isPublic: setPublish } }
     );
@@ -193,7 +193,7 @@ const fileUtils = {
     if (size) localPath = `${localPath}_${size}`;
 
     try {
-      data = await fsPromises.readFile(localPath);
+      data = await fs.promises.readFile(localPath);
     } catch (err) {
       return { error: 'Not found', code: 404 };
     }

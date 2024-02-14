@@ -1,9 +1,9 @@
-const { ObjectId } = require('mongodb');
+const mongodb = require('mongodb');
 
 const basicUtils = {
   isValidId (id) {
     try {
-      ObjectId(id);
+      new mongodb.ObjectId(id);
     } catch (err) {
       return false;
     }
