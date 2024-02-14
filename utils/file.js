@@ -1,14 +1,14 @@
-const mongodb = require('mongodb');
-const uuid = require('uuid');
-const fs = require('fs');
+const { ObjectId} = require('mongodb');
+const { v4: uuidv4} = require('uuid');
+const fsPromises = require('fs').promises;
 const dbClient = require('./db');
 const userUtils = require('./user');
 const basicUtils = require('./basic');
 
 const fileUtils = {
-  async validateBody (request) {
+  async validateBody(request) {
     const {
-      name, type, isPublic = false, data
+      name, type, isPublic = false, data,
     } = request.body;
 
     let { parentId = 0 } = request.body;
@@ -29,7 +29,7 @@ const fileUtils = {
 
       if (basicUtils.isValidId(parentId)) {
         file = await this.getFile({
-          _id: new mongodb.ObjectId(parentId)
+          _id: ObjectId(parentId),
         });
       } else {
         file = null;
@@ -49,41 +49,41 @@ const fileUtils = {
         type,
         parentId,
         isPublic,
-        data
-      }
+        data,
+      },
     };
 
     return obj;
   },
 
-  async getFile (query) {
+  async getFile(query) {
     const file = await dbClient.filesCollection.findOne(query);
     return file;
   },
 
-  async getFilesOfParentId (query) {
+  async getFilesOfParentId(query) {
     const fileList = await dbClient.filesCollection.aggregate(query);
     return fileList;
   },
 
-  async saveFile (userId, fileParams, FOLDER_PATH) {
+  async saveFile(userId, fileParams, FOLDER_PATH) {
     const {
-      name, type, isPublic, data
+      name, type, isPublic, data,
     } = fileParams;
     let { parentId } = fileParams;
 
-    if (parentId !== 0) parentId = new mongodb.ObjectId(parentId);
+    if (parentId !== 0) parentId = ObjectId(parentId);
 
     const query = {
-      userId: new mongodb.ObjectId(userId),
+      userId: ObjectId(userId),
       name,
       type,
       isPublic,
-      parentId
+      parentId,
     };
 
     if (fileParams.type !== 'folder') {
-      const fileNameUUID = uuid.v4();
+      const fileNameUUID = uuidv4();
 
       const fileDataDecoded = Buffer.from(data, 'base64');
 
@@ -92,8 +92,8 @@ const fileUtils = {
       query.localPath = path;
 
       try {
-        await fs.promises.mkdir(FOLDER_PATH, { recursive: true });
-        await fs.promises.writeFile(path, fileDataDecoded);
+        await fsPromises.mkdir(FOLDER_PATH, { recursive: true });
+        await fsPromises.writeFile(path, fileDataDecoded);
       } catch (err) {
         return { error: err.message, code: 400 };
       }
@@ -108,16 +108,16 @@ const fileUtils = {
     return { error: null, newFile };
   },
 
-  async updateFile (query, set) {
+  async updateFile(query, set) {
     const fileList = await dbClient.filesCollection.findOneAndUpdate(
       query,
       set,
-      { returnOriginal: false }
+      { returnOriginal: false },
     );
     return fileList;
   },
 
-  async publishUnpublish (request, setPublish) {
+  async publishUnpublish(request, setPublish) {
     const { id: fileId } = request.params;
 
     if (!basicUtils.isValidId(fileId)) { return { error: 'Unauthorized', code: 401 }; }
@@ -127,24 +127,24 @@ const fileUtils = {
     if (!basicUtils.isValidId(userId)) { return { error: 'Unauthorized', code: 401 }; }
 
     const user = await userUtils.getUser({
-      _id: new mongodb.ObjectId(userId)
+      _id: ObjectId(userId),
     });
 
     if (!user) return { error: 'Unauthorized', code: 401 };
 
     const file = await this.getFile({
-      _id: new mongodb.ObjectId(fileId),
-      userId: new mongodb.ObjectId(userId)
+      _id: ObjectId(fileId),
+      userId: ObjectId(userId),
     });
 
     if (!file) return { error: 'Not found', code: 404 };
 
     const result = await this.updateFile(
       {
-        _id: new mongodb.ObjectId(fileId),
-        userId: new mongodb.ObjectId(userId)
+        _id: ObjectId(fileId),
+        userId: ObjectId(userId),
       },
-      { $set: { isPublic: setPublish } }
+      { $set: { isPublic: setPublish } },
     );
 
     const {
@@ -153,7 +153,7 @@ const fileUtils = {
       name,
       type,
       isPublic,
-      parentId
+      parentId,
     } = result.value;
 
     const updatedFile = {
@@ -162,13 +162,13 @@ const fileUtils = {
       name,
       type,
       isPublic,
-      parentId
+      parentId,
     };
 
     return { error: null, code: 200, updatedFile };
   },
 
-  processFile (doc) {
+  processFile(doc) {
     const file = { id: doc._id, ...doc };
 
     delete file.localPath;
@@ -177,7 +177,7 @@ const fileUtils = {
     return file;
   },
 
-  isOwnerAndPublic (file, userId) {
+  isOwnerAndPublic(file, userId) {
     if (
       (!file.isPublic && !userId) ||
       (userId && file.userId.toString() !== userId && !file.isPublic)
@@ -186,20 +186,20 @@ const fileUtils = {
     return true;
   },
 
-  async getFileData (file, size) {
+  async getFileData(file, size) {
     let { localPath } = file;
     let data;
 
     if (size) localPath = `${localPath}_${size}`;
 
     try {
-      data = await fs.promises.readFile(localPath);
+      data = await fsPromises.readFile(localPath);
     } catch (err) {
       return { error: 'Not found', code: 404 };
     }
 
     return { data };
-  }
+  },
 };
 
 module.exports = fileUtils;

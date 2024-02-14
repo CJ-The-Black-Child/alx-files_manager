@@ -1,6 +1,6 @@
 const Queue = require('bull');
-const mongodb = require('mongodb');
-const fs = require('fs');
+const { ObjectId } = require('mongodb');
+const fsPromises = require('fs').promises;
 const imageThumbnail = require('image-thumbnail');
 const fileUtils = require('./utils/file');
 const userUtils = require('./utils/user');
@@ -25,8 +25,8 @@ fileQueue.process(async (job) => {
   if (!basicUtils.isValidId(fileId) || !basicUtils.isValidId(userId)) throw new Error('File not found');
 
   const file = await fileUtils.getFile({
-    _id: new mongodb.ObjectId(fileId),
-    userId: new mongodb.ObjectId(userId)
+    _id: ObjectId(fileId),
+    userId: ObjectId(userId),
   });
 
   if (!file) throw new Error('File not found');
@@ -39,7 +39,7 @@ fileQueue.process(async (job) => {
     options.width = width;
     try {
       const thumbnail = await imageThumbnail(localPath, options);
-      await fs.promises.writeFile(`${localPath}_${width}`, thumbnail);
+      await fsPromises.writeFile(`${localPath}_${width}`, thumbnail);
     } catch (err) {
       console.error(err.message);
     }
@@ -57,7 +57,7 @@ userQueue.process(async (job) => {
   if (!basicUtils.isValidId(userId)) throw new Error('User not found');
 
   const user = await userUtils.getUser({
-    _id: new mongodb.ObjectId(userId)
+    _id: ObjectId(userId),
   });
 
   if (!user) throw new Error('User not found');
