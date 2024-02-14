@@ -1,5 +1,5 @@
-const { ObjectId} = require('mongodb');
-const { v4: uuidv4} = require('uuid');
+const { ObjectId } = require('mongodb');
+const { v4: uuidv4 } = require('uuid');
 const fsPromises = require('fs').promises;
 const dbClient = require('./db');
 const userUtils = require('./user');
@@ -179,8 +179,8 @@ const fileUtils = {
 
   isOwnerAndPublic(file, userId) {
     if (
-      (!file.isPublic && !userId) ||
-      (userId && file.userId.toString() !== userId && !file.isPublic)
+      (!file.isPublic && !userId)
+      || (userId && file.userId.toString() !== userId && !file.isPublic)
     ) { return false; }
 
     return true;

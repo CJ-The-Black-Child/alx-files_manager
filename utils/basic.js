@@ -1,14 +1,14 @@
-const mongodb = require('mongodb');
+const { ObjectId } = require('mongodb');
 
 const basicUtils = {
-  isValidId (id) {
+  isValidId(id) {
     try {
-      new mongodb.ObjectId(id);
+      ObjectId(id);
     } catch (err) {
       return false;
     }
     return true;
-  }
+  },
 };
 
 module.exports = basicUtils;
