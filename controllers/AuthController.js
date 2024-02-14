@@ -2,6 +2,7 @@ const sha1 = require('sha1');
 const { v4: uuidv4 } = require('uuid');
 const { set } = require('../utils/redis');
 const { getUser, getUserIdAndKey } = require('../utils/user');
+const dbClient = require('../utils/db');
 
 class AuthController {
   static async getConnect(request, response) {
