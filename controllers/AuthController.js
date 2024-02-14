@@ -1,6 +1,6 @@
 const sha1 = require('sha1');
 const { v4: uuidv4 } = require('uuid');
-const { set } = require('../utils/redis');
+const redisClient = require('../utils/redis');
 const { getUser, getUserIdAndKey } = require('../utils/user');
 const dbClient = require('../utils/db');
 
@@ -21,7 +21,7 @@ class AuthController {
     if (!user) return response.status(401).send({ error: 'Unauthorized' });
 
     const token = uuidv4();
-    await set(`auth_${token}`, user._id.toString(), 24 * 3600);
+    await redisClient.set(`auth_${token}`, user._id.toString(), 24 * 3600);
 
     return response.status(200).send({ token });
   }
