@@ -35,7 +35,11 @@ class UsersController {
   }
 
   static async getMe(request, response) {
-    const { userId } = await User.getUserIdAndKey(request);
+    const { userId, key } = await User.getUserIdAndKey(request);
+
+    if (!key) {
+      return response.status(401).send({ error: 'Unauthorized' });
+    }
 
     const user = await User.getUser({
       _id: ObjectId(userId),
